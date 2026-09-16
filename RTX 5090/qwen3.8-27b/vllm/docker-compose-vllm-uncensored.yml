@@ -1,0 +1,50 @@
+services:
+  Qwen3.8-27B:
+    container_name: Qwen3.8-27B-NVFP4
+    image: vllm/vllm-openai:latest
+    restart: always
+    ports:
+      - "58080:8000"
+    command: [
+      "/data/MODELS/Qwen3.8-27B",
+      "--gpu-memory-utilization", "0.94",
+      "--kv-cache-memory-bytes", "5905580032",
+      "--max-model-len", "65536",
+      "--max-num-batched-tokens", "8192",
+      "--speculative-config", "{\"method\":\"mtp\",\"num_speculative_tokens\":3}",
+      "--attention-config.backend", "FLASHINFER",
+      "--attention-config.flash_attn_version", "2",
+      "--enable-prefix-caching",
+      "--enable-chunked-prefill",
+      "--reasoning-parser", "qwen3",
+      "--enable-auto-tool-choice",
+      "--tool-call-parser", "qwen3_coder",
+      "--async-scheduling",
+      "--no-enforce-eager",
+      "--compilation-config.mode", "3",
+      "--compilation-config.cudagraph_mode", "PIECEWISE",
+      "--served-model-name", "qwen3.8-27b",
+      "--host", "0.0.0.0",
+      "--port", "8000",
+      "--mamba-cache-dtype", "bfloat16"
+    ]
+    volumes:
+      - ./Qwen3.8-27B-Uncensored-NVFP4:/data/MODELS/Qwen3.8-27B
+    environment:
+      - TZ=Asia/Shanghai
+      - VLLM_CONFIGURE_LOGGING=1
+      - OMP_NUM_THREADS=8
+      - VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1
+    shm_size: 32g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

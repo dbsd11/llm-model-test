@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  Qwen3.8-27B-SGLang:
+    image: lmsysorg/sglang:latest
+    container_name: Qwen3.8-27B-SGLang-NVFP4
+    restart: always
+    
+    # 完美复制 vLLM 的网络：桥接模式，将容器内 8000 端口映射到宿主机 58080
+    ports:
+      - "58080:8000"
+      
+    volumes:
+      # 挂载路径保持与你原本的 vLLM 一致
+      - ./Qwen3.8-27B-Uncensored-NVFP4:/data/MODELS/Qwen3.8-27B
+      
+    environment:
+      - TZ=Asia/Shanghai
+      - OMP_NUM_THREADS=8
+    entrypoint: sglang serve
+    
+    command: [
+      # 基础路径与服务名
+      "--model-path", "/data/MODELS/Qwen3.8-27B",
+      "--served-model-name", "qwen3.8-27b",
+      "--host", "0.0.0.0",
+      "--port", "8000",
+
+      "--quantization", "modelopt_mixed",
+      
+      # 显存精细化控制（SGLang 使用静态占比划分）
+      "--mem-fraction-static", "0.93",
+
+      # 权重与 KV 缓存量化
+      "--kv-cache-dtype", "fp8_e4m3",
+      "--attention-backend", "flashinfer",
+     
+      "--cuda-graph-max-bs-decode", "1",
+      
+      # 上下文与并发控制
+      "--context-length", "65536",
+      "--max-running-requests", "4",
+      
+      # MTP 投机采样参数对齐
+      "--speculative-algorithm", "EAGLE", 
+      "--speculative-num-steps", "3",
+      "--speculative-eagle-topk", "1",
+      "--speculative-num-draft-tokens", "4",
+      "--enable-linear-replayssm-spec",
+      
+      # 工具调用与思考流解析器对齐
+      "--reasoning-parser", "qwen3",
+      "--tool-call-parser", "qwen3_coder",
+      
+      "--mamba-radix-cache-strategy", "extra_buffer_lazy",
+      "--mamba-ssm-dtype", "bfloat16"
+    ]
+    
+    shm_size: 32g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+      
+    healthcheck:
+      # 健康检查无缝切换到内部 8000 端口
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+              
+    # 完美保留你原配置中的额外主机映射
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
