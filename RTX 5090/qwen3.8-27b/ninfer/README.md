@@ -83,65 +83,9 @@ docker compose -f docker-compose-infer-v3.yaml down
 
 详见 [docker-compose-infer-v2.yml](./docker-compose-infer-v2.yml)
 
-```yaml
-services:
-  Qwen3.8-27B:
-    container_name: Qwen3.8-27B-NVFP4
-    image: ninfer-v2:local
-    ports:
-      - "58080:8000"
-    command: [
-      "ninfer-serve", "/data/MODELS/Qwen3.8-27B/qwen3_8_27b_nvfp4.ninfer",
-      "--kv-dtype", "fp8",
-      "--max-context", "131072",
-      "--max-concurrency", "4",
-      "--prefill-chunk", "2048",
-      "--host-state-slots", "16",
-      "--host-kv-mib", "0",
-      "--spec", "mtp",
-      "--draft-tokens", "4",
-      "--lm-head-draft",
-      "--preserve-thinking",
-      "--host", "0.0.0.0",
-      "--port", "8000",
-      "--vision"
-    ]
-    volumes:
-      - ./Qwen3.8-27B-NVFP4-NInfer-v2:/data/MODELS/Qwen3.8-27B
-    shm_size: 32g
-```
-
 ### v3 版本配置
 
 详见 [docker-compose-infer-v3.yml](./docker-compose-infer-v3.yml)
-
-```yaml
-services:
-  Qwen3.8-27B:
-    container_name: Qwen3.8-27B-NVFP4
-    image: ninfer-v3:local
-    ports:
-      - "58080:8000"
-    command: [
-      "ninfer-serve", "/data/MODELS/Qwen3.8-27B/qwen3_8_27b_nvfp4.ninfer",
-      "--kv-dtype", "fp8",
-      "--max-context", "131072",
-      "--max-concurrency", "4",
-      "--prefill-chunk", "2048",
-      "--host-state-slots", "16",
-      "--host-kv-mib", "0",
-      "--spec", "mtp",
-      "--draft-tokens", "4",
-      "--lm-head-draft",
-      "--preserve-thinking",
-      "--host", "0.0.0.0",
-      "--port", "8000",
-      "--vision"
-    ]
-    volumes:
-      - ./Qwen3.8-27B-nvfp4-NInfer-v3:/data/MODELS/Qwen3.8-27B
-    shm_size: 32g
-```
 
 ## 关键参数
 
