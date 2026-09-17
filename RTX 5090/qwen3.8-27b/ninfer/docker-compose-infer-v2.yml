@@ -7,6 +7,7 @@ services:
       - "58080:8000"
     command: [
       "ninfer-serve", "/data/MODELS/Qwen3.8-27B/qwen3_8_27b_nvfp4.ninfer",
+      "--model-id", "qwen3.8-27b",
       "--kv-dtype", "fp8",
       "--kv-dtype", "fp8",
       "--kv-capacity", "auto",
